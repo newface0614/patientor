@@ -11,7 +11,7 @@ import { useStateValue, setPatientDetails } from "../state";
 const PatientDetails: React.FC = () => {
     const { id } = useParams<{ id: string }>();
 
-    const [ { patients, patient }, dispatch] = useStateValue();
+    const [ { patients, patient, diagnosis }, dispatch] = useStateValue();
     // const [modalOpen, setModalOpen] = React.useState<boolean>(false);
     const [error, setError] = React.useState<string | undefined>();
 
@@ -50,7 +50,7 @@ const PatientDetails: React.FC = () => {
         return <h1>Patient not found!</h1>;
     }
 
-    console.log(id, error, patient);
+    console.log(id, error, patient, diagnosis, diagnosis);
     return (
         <div>
             <h1>
@@ -75,7 +75,7 @@ const PatientDetails: React.FC = () => {
                 { edata.description } 
                 </p> 
                 { 
-                  edata.diagnosisCodes ? <ul>{edata.diagnosisCodes.map((d,i) => <React.Fragment key={d}> <li key={i}> {d} </li></React.Fragment>)}</ul> : null
+                  edata.diagnosisCodes ? <ul>{edata.diagnosisCodes.map((d,i) => <React.Fragment key={d}> <li key={i}> {d}  {diagnosis[d]?.name} </li></React.Fragment>)}</ul> : null
                 }
                 </React.Fragment>))}
             
