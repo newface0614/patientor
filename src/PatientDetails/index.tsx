@@ -1,10 +1,10 @@
 import React, { useEffect } from "react";
 import axios from "axios";
 
-import { Patient } from "../types";
+import { Patient, Entry } from "../types";
 import { apiBaseUrl } from "../constants";
 
-import { Icon } from "semantic-ui-react";
+import { Icon, Segment } from "semantic-ui-react";
 import { useParams } from "react-router-dom";
 import { useStateValue, setPatientDetails } from "../state";
 
@@ -50,6 +50,53 @@ const PatientDetails: React.FC = () => {
         return <h1>Patient not found!</h1>;
     }
 
+    const assertNever = (value: never): never => {
+        throw new Error(
+          `Unhandled discriminated union member: ${JSON.stringify(value)}`
+        );
+      };
+
+    // const HealthCheck: React.FC<{ entry: Entry }> = ({ entry }) => {
+    //    return <Icon
+    //             name={
+    //                 entry.healthCheckRating === "male"
+    //                 ? "mars"
+    //                 : entry.healthCheckRating === "female"
+    //                 ? "venus"
+    //                 : "transgender alternate"
+    //             }
+    //             />;
+    
+    // };
+
+    const EntryDetails: React.FC<{ entry: Entry }> = ({ entry }) => {
+        console.log(entry);
+        switch (entry.type) {
+            case "Hospital":
+                return (<h4> { entry.date } <Icon name="hospital outline" /> </h4>); //<HospitalEntry> </HospitalEntry>;
+            case "OccupationalHealthcare":
+                return (<> <h4>{ entry.date }  <Icon name="stethoscope" /> { entry.employerName } </h4> <i>{ entry.description }</i> </>); //<OccupationalHealthcareEntry></OccupationalHealthcareEntry>;
+            case "HealthCheck":
+                return (<> <h4> { entry.date } <Icon name="doctor" /> </h4>  <i>{ entry.description }</i> 
+                <p>
+                    <Icon
+                        name={
+                            entry.healthCheckRating === 0
+                            ? "heart"
+                            : entry.healthCheckRating === 1
+                            ? "heartbeat"
+                            : entry.healthCheckRating === 2
+                            ? "heart outline"
+                            : "heart outline"
+                        }
+                    /> 
+
+                </p> </>); //<HealthCheck></HealthCheck>;
+            default:
+                return assertNever(entry);
+        }
+    };
+
     console.log(id, error, patient, diagnosis, diagnosis);
     return (
         <div>
@@ -69,14 +116,12 @@ const PatientDetails: React.FC = () => {
             <p>occupation: {patient.occupation}</p>
             <h2>entries</h2>
             
-            {patient.entries.map( edata => (<React.Fragment key={edata.id}> <p key={edata.id}> 
-                { edata.date } 
-                { ` `}
-                { edata.description } 
-                </p> 
+            {patient.entries.map( edata => (<React.Fragment key={edata.id}> <Segment>
+                <EntryDetails entry={edata}/> 
                 { 
                   edata.diagnosisCodes ? <ul>{edata.diagnosisCodes.map((d,i) => <React.Fragment key={d}> <li key={i}> {d}  {diagnosis[d]?.name} </li></React.Fragment>)}</ul> : null
                 }
+                </Segment>
                 </React.Fragment>))}
             
         </div>
