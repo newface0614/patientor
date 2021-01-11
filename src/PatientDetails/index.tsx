@@ -4,23 +4,51 @@ import axios from "axios";
 import { Patient, Entry } from "../types";
 import { apiBaseUrl } from "../constants";
 
-import { Icon, Segment } from "semantic-ui-react";
+import { Icon, Segment, Button } from "semantic-ui-react";
 import { useParams } from "react-router-dom";
-import { useStateValue, setPatientDetails } from "../state";
+import { useStateValue, setPatientDetails, addEntry } from "../state";
+
+import { EntryFormValues } from "../AddEntryModal/AddEntryForm";
+import AddEntryModal from "../AddEntryModal";
+
 
 const PatientDetails: React.FC = () => {
     const { id } = useParams<{ id: string }>();
 
     const [ { patients, patient, diagnosis }, dispatch] = useStateValue();
-    // const [modalOpen, setModalOpen] = React.useState<boolean>(false);
+    const [modalOpen, setModalOpen] = React.useState<boolean>(false);
     const [error, setError] = React.useState<string | undefined>();
 
-    // const openModal = (): void => setModalOpen(true);
+    const openModal = (): void => setModalOpen(true);
 
-    // const closeModal = (): void => {
-    //     setModalOpen(false);
-    //     setError(undefined);
-    // };
+    const closeModal = (): void => {
+        setModalOpen(false);
+        setError(undefined);
+    };
+
+    const submitNewEntry = async (entry: EntryFormValues) => {
+        try {
+          type NewEntry = Omit<Entry, "id"> & { userId: string };
+          const newEntry: NewEntry = {
+            userId: id,
+            ...entry,
+          };
+
+          console.log('add entry data:', newEntry);
+    
+          const { data: savedEntry } = await axios.post<Entry>(
+            `${apiBaseUrl}/patients/${id}/entries`,
+            newEntry
+          );
+          dispatch(addEntry(savedEntry, id));
+          closeModal();
+        } catch (err) {
+          console.error(err.response.data);
+          setError(err.response.data.error);
+        }
+      };
+
+    
 
     useEffect(() => {
         if ( id in patients ) {
@@ -56,21 +84,10 @@ const PatientDetails: React.FC = () => {
         );
       };
 
-    // const HealthCheck: React.FC<{ entry: Entry }> = ({ entry }) => {
-    //    return <Icon
-    //             name={
-    //                 entry.healthCheckRating === "male"
-    //                 ? "mars"
-    //                 : entry.healthCheckRating === "female"
-    //                 ? "venus"
-    //                 : "transgender alternate"
-    //             }
-    //             />;
     
-    // };
 
     const EntryDetails: React.FC<{ entry: Entry }> = ({ entry }) => {
-        console.log(entry);
+        // console.log(entry);
         switch (entry.type) {
             case "Hospital":
                 return (<h4> { entry.date } <Icon name="hospital outline" /> </h4>); //<HospitalEntry> </HospitalEntry>;
@@ -97,7 +114,7 @@ const PatientDetails: React.FC = () => {
         }
     };
 
-    console.log(id, error, patient, diagnosis, diagnosis);
+    // console.log(id, error, patient, diagnosis, diagnosis);
     return (
         <div>
             <h1>
@@ -115,7 +132,18 @@ const PatientDetails: React.FC = () => {
             {patient.ssn && <p>ssn: {patient.ssn}</p>}
             <p>occupation: {patient.occupation}</p>
             <h2>entries</h2>
-            
+            <Button
+                onClick={openModal}
+                style={{ display: "inline-block", marginLeft: "24px" }}
+            >
+                Add New Entry
+            </Button>
+            <AddEntryModal
+                modalOpen={modalOpen}
+                onSubmit={submitNewEntry}
+                onClose={closeModal}
+                error={error}
+            />
             {patient.entries.map( edata => (<React.Fragment key={edata.id}> <Segment>
                 <EntryDetails entry={edata}/> 
                 { 

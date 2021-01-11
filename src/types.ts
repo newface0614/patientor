@@ -53,6 +53,12 @@ export type Entry =
 | OccupationalHealthcareEntry
 | HealthCheckEntry;
 
+export enum EntryType {
+  Hospital = "Hospital",
+  OccupationalHealthcare = "OccupationalHealthcare",
+  HealthCheck = "HealthCheck",
+}
+
 export enum Gender {
   Male = "male",
   Female = "female",
@@ -67,4 +73,18 @@ export interface Patient {
   ssn?: string;
   dateOfBirth?: string;
   entries: Entry[];
+}
+
+export interface NewEntry extends BaseEntry {
+  type: "Hospital" | "HealthCheck" | "OccupationalHealthcare";
+  healthCheckRating: HealthCheckRating;
+  discharge: {
+    date: string;
+    criteria: string;
+  };
+  employerName: string;
+  sickLeave: {
+    startDate: string;
+    endDate: string;
+  };
 }
